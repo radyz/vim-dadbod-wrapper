@@ -17,15 +17,11 @@ local connections_statistics = {}
 --- Loads connections from environment variables.
 --- Expected format in environment variable:
 --- <prefix>CONNECTION_NAME=CONNECTION_URL
---- @param prefix string|nil (Optional) The prefix to search for. Defaults to "DADBOD_".
+--- @param prefix string The prefix to search for.
 M.load_from_env = function(prefix)
-  local opts = {
-    prefix = prefix or "DADBOD_",
-  }
-
   for key, value in pairs(vim.fn.environ()) do
-    if key:find("^" .. opts.prefix) then
-      local clean_name = key:sub(#opts.prefix + 1)
+    if key:find("^" .. prefix) then
+      local clean_name = key:sub(#prefix + 1)
 
       M.add(clean_name, value)
     end

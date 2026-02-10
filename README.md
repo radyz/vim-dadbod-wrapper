@@ -20,15 +20,18 @@ You can install this plugin using your favorite plugin manager.
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
-use {
+return {
     'tpope/vim-dadbod',
-    'radyz/vim-dadbod-wrapper',
+    {
+        'radyz/vim-dadbod-wrapper',
+        opts = {
+            env_prefix = 'DADBOD_'
+        }
+    }
 }
 ```
 
 ## Configuration
-
-The `setup()` function initializes the plugin and sets up the necessary commands. By default, it will try to load connections from environment variables prefixed with `DADBOD_`.
 
 ### Environment Variables
 
@@ -38,14 +41,12 @@ The plugin can load connections from environment variables that follow this form
 <PREFIX><CONNECTION_NAME>=<CONNECTION_URL>
 ```
 
-By default, the prefix is `DADBOD_`. For example:
-
 ```sh
 export DADBOD_MY_POSTGRES="postgresql://user:pass@host:port/dbname"
 export DADBOD_ANOTHER_DB="mysql://user:pass@host:port/dbname"
 ```
 
-When Neovim starts, `vim-dadbod-wrapper` will automatically load these and make `my_postgres` and `another_db` available for the `:DBExec` command.
+When Neovim starts, `vim-dadbod-wrapper` will automatically load these and make `my_postgres` and `another_db` available for the `:DBExec` command provided that the `env_prefix` option is supplied.
 
 ### macOS Keychain
 
