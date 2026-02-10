@@ -1,5 +1,5 @@
---- Secret manager functions
--- @module secret_manager
+--- Keychain Access facade.
+-- @module keychain-access
 local M = {}
 
 --- Extract password generically from security -g output
@@ -28,13 +28,10 @@ local function parse_keychain_output(output)
   end)
 end
 
---- Loads secrets from keychain and parses them from CSV format into a table.
---- Expected format in Keychain:
---- user_one,password1
---- user_two,password2
+--- Gets secret from keychain.
 --- @param keychain_label string
---- @return table<string, string>|nil secrets A table of user=password pairs or nil on error.
-M.load = function(keychain_label)
+--- @return string|nil secret
+M.find_generic_password = function(keychain_label)
   local cmd = string.format('security find-generic-password -s "%s" -g 2>&1', keychain_label)
   local result = vim.fn.system(cmd)
 
@@ -47,23 +44,7 @@ M.load = function(keychain_label)
     return nil
   end
 
-  local secrets = {}
-  -- %f[^\n]%s* matches lines while ignoring leading/trailing whitespace
-  for line in raw_secret:gmatch("[^\r\n]+") do
-    -- Split by the first comma found
-    local key, value = line:match("([^,]+),(.+)")
-
-    if key and value then
-      -- Clean up any accidental whitespace around the values
-      secrets[key:gsub("%s+", "")] = value:gsub("%s+", "")
-    end
-  end
-
-  if next(secrets) == nil then
-    return nil
-  end
-
-  return secrets
+  return raw_secret
 end
 
 return M
