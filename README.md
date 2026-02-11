@@ -71,6 +71,38 @@ Each line in the secret should be in the format: `connection_name,connection_url
 
 Now you can load these connections into Neovim using the `:DBLoadSecret` command.
 
+### Optional Telescope support
+
+Integration with telescope can be set with `require("telescope").load_extension("dadbod_wrapper")` somewhere in your config.
+
+Example key bindings with `lazy.vim`:
+
+```lua
+return {
+    'tpope/vim-dadbod',
+    {
+        'radyz/vim-dadbod-wrapper',
+        opts = {
+            env_prefix = 'DADBOD_'
+        },
+        keys = {
+            {
+                "<localleader>r",
+                function()
+                    require("telescope").extensions.dadbod_wrapper.connections(
+                        require("telescope.themes").get_dropdown({
+                            initial_mode = "normal",
+                        })
+                    )
+                end,
+                ft = { "sql" },
+                mode = { "n", "v" },
+            },
+        },
+    }
+}
+```
+
 ## Usage
 
 ### `:DBLoadSecret`
