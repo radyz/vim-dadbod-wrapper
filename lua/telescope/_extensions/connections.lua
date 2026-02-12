@@ -4,6 +4,7 @@ local finders = require("telescope.finders")
 local pickers = require("telescope.pickers")
 local conf = require("telescope.config").values
 local connections = require("vim-dadbod-wrapper.connection-manager")
+local parser = require("vim-dadbod-wrapper.utils.parser")
 
 return function(opts)
   opts = opts or {}
@@ -39,7 +40,21 @@ return function(opts)
             return
           end
 
-          connections.exec(selection, current_bufnr, range)
+          local can_execute = 1
+
+          local effectful_statements = parser.list_effectful_statements(current_bufnr, range)
+
+          if #effectful_statements > 0 then
+            local message = string.format(
+              "Database state modifications detected:\n%s\n\nProceed?",
+              table.concat(effectful_statements, "\n")
+            )
+            can_execute = vim.fn.confirm(message, "&Yes\n&No")
+          end
+
+          if can_execute == 1 then
+            connections.exec(selection, current_bufnr, range)
+          end
         end)
 
         return true

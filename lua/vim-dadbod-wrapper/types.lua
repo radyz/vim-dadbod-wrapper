@@ -1,0 +1,1 @@
+---@alias QueryRange { start_line: number, end_line: number }

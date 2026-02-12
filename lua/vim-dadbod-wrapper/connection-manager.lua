@@ -80,7 +80,7 @@ M.list = function()
       return a.usage > b.usage
     end
 
-    return a.connection < b.connection
+    return a.used_at > b.used_at
   end)
 
   local result = {}
@@ -93,8 +93,6 @@ M.list = function()
 
   return result
 end
-
----@alias QueryRange { start_line: number, end_line: number }
 
 --- Gets a connection.
 --- @param connection string
@@ -138,6 +136,21 @@ M.add = function(connection, url)
     usage = 0,
     used_at = os.time(),
   }
+end
+
+--- Gets the connection's backend name.
+--- Connections with the same name will be overwritten.
+--- @param connection string
+--- @return string|nil backend The connection's backend name.
+M.get_backend = function(connection)
+  local connection_url = connections[connection]
+  if not connection_url then
+    return nil
+  end
+
+  local backend_name, _ = connection_url:match("(%w+):(.+)")
+
+  return backend_name
 end
 
 return M

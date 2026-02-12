@@ -103,6 +103,11 @@ return {
 }
 ```
 
+### Treesitter support
+
+When using [Treesitter](https://github.com/nvim-treesitter/nvim-treesitter), any query modifying
+database state will be prompted for confirmation before execution.
+
 ## Usage
 
 ### `:DBLoadSecret`
