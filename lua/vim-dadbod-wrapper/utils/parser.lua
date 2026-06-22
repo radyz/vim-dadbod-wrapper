@@ -1,7 +1,4 @@
-local _, ts = pcall(require, "vim.treesitter")
-local _, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
-
---- SQL parser module.
+--- SQL parser module modernized for Neovim 0.12+
 -- @module parser
 
 local M = {}
@@ -18,27 +15,43 @@ local effectful_statements_query = [[
 
 --- Gets effectful query statements.
 --- @param bufnr number
---- @param range QueryRange|nil (Optional) Query range to parse.
+--- @param range table|nil (Optional) Query range to parse containing start_line and end_line.
 --- @return table<number, string> statements Statements with side effects.
 M.list_effectful_statements = function(bufnr, range)
-  if not ts or not ts_utils then
+  -- 1. Use the core native vim.treesitter API directly
+  if not vim.treesitter then
     return {}
   end
 
-  local parser = ts.get_parser(bufnr, "sql")
-  local root = parser:parse()[1]:root()
+  -- 2. Wrap parser generation in a pcall to gracefully handle missing parsers
+  local ok, parser = pcall(vim.treesitter.get_parser, bufnr, "sql")
+  if not ok or not parser then
+    return {}
+  end
+
+  -- 3. Modern way to safely fetch the root node of the syntax tree
+  local tree = parser:parse()[1]
+  if not tree then
+    return {}
+  end
+  local root = tree:root()
 
   local result = {}
   local query = vim.treesitter.query.parse("sql", effectful_statements_query)
 
+  -- Convert 1-indexed editor lines to 0-indexed API rows
   local start_row = range and (range.start_line - 1) or 0
   local end_row = range and range.end_line or -1
 
   for id, node in query:iter_captures(root, bufnr, start_row, end_row) do
     local capture_name = query.captures[id]:upper()
-    local row = ts_utils.get_vim_range({ node:range() }, bufnr)
 
-    table.insert(result, string.format("- %s on L%d", capture_name, row))
+    -- 4. Native replacement for ts_utils.get_vim_range
+    -- node:range() returns: start_row, start_col, end_row, end_col (all 0-indexed)
+    local start_line = node:range()
+    local vim_row = start_line + 1 -- Convert back to 1-indexed line for the editor UI
+
+    table.insert(result, string.format("- %s on L%d", capture_name, vim_row))
   end
 
   return result
